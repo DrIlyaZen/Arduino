@@ -1,0 +1,19 @@
+const int button = 2;     // вывод контроллера для кнопки
+int count = 0;         // переменная для подсчета нажатий на кнопку
+int button_old = 1;    // предидущее значение входа для отлавливания момента нажатия
+void setup() {
+  //инициализация связи с монитором порта
+  Serial.begin(9600);
+  //конфигурация входа контроллера и подключение внутреннего подтягивающего резистора
+  pinMode(button, INPUT_PULLUP);
+}
+void loop() {
+  if ((digitalRead(button)==LOW)&&(button_old==1))
+  { 
+    count = count + 1;
+    Serial.println(count);
+  }
+  button_old = digitalRead(button); 
+  
+  delay(10);
+}
