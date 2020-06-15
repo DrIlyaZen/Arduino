@@ -1,0 +1,84 @@
+#include <TM1637Display.h>
+#include "DHT.h"
+const int CLK = 3;
+const int DIO = 4;
+boolean butt_flag = 0;
+boolean butt;
+boolean led_flag = 0;
+unsigned long last_press;
+byte LEDcounter = 11;
+int show;
+TM1637Display display(CLK, DIO);
+
+  #define DHTPIN 5
+  #define TRIG 9
+  #define ECHO 8
+  DHT dht(DHTPIN, DHT22);
+void setup() {
+  pinMode(2, INPUT_PULLUP);   // сюда подключена кнопка
+  pinMode(11, OUTPUT);        // сюда подключен светодиод
+  pinMode(12, OUTPUT);        // сюда подключен светодиод
+  pinMode(13, OUTPUT);        // сюда подключен светодиод
+  digitalWrite(11, 0);
+  digitalWrite(12, 0);
+  digitalWrite(13, 0);
+  pinMode(TRIG,OUTPUT);
+  pinMode(ECHO,INPUT);
+  display.setBrightness(0x01);
+  dht.begin();
+}
+float temp(){   
+float t = dht.readTemperature();
+
+    return t;  
+    };
+    float phi(){
+      float h = dht.readHumidity();
+      return h;  
+      };
+  float dist(){
+  unsigned long leng;
+  digitalWrite(TRIG,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG,LOW);
+  leng = pulseIn(ECHO,HIGH);
+  delay(100);
+  return leng / 58.00;
+  };
+  float count() {
+    
+    butt = !digitalRead(2); // считать текущее положение кнопки
+  
+  if (butt == 1 && butt_flag == 0 && millis() - last_press > 100) {
+    butt_flag = 1;   
+   LEDcounter++;                    // увеличить номер для следующего включения
+    last_press = millis();
+  };
+  if (butt == 0 && butt_flag == 1) {
+    butt_flag = 0;
+   
+  };
+    
+    return LEDcounter;
+    }
+
+void loop() {
+  if(count() == 11){
+    show=dist();
+     display.showNumberDec(show);
+      digitalWrite(LEDcounter, 1); 
+      digitalWrite(12, 0);
+  digitalWrite(13, 0);
+    }
+    if(count() == 12){
+    show=temp();
+      display.showNumberDec(show);
+      digitalWrite(LEDcounter, 1); 
+    }
+     if(count() == 13){
+    show=phi();
+      display.showNumberDec(show);
+      digitalWrite(LEDcounter, 1); 
+      LEDcounter = 10;
+    }
+}
